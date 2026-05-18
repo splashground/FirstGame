@@ -33,10 +33,9 @@ public:
 
     bool animationsFinished();
 
-    // Новые методы для бонусов
     void triggerBonus(int r, int c, GemColor originalColor);
     void repaintBonus(int r, int c, GemColor color);
-    void bombBonus();
+    void bombBonus(int centerR, int centerC);
 
 private:
     std::vector<std::vector<Cell>> grid;

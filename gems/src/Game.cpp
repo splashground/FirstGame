@@ -8,7 +8,6 @@
 // Game.cpp
 #include "Game.h"
 #include <iostream>
-#include <ctime>
 #include <cstdlib>   // для srand
 #include <ctime>     // для time
 #include <cmath>     // для std::abs
@@ -77,6 +76,8 @@ void Game::handleClick(int mx, int my)
         if (std::abs(selectedRow - r) + std::abs(selectedCol - c) == 1)
         {
             board.swapCells(selectedRow, selectedCol, r, c);
+            secondRow = r;
+            secondCol = c;
             state = SWAPPING;
         }
         else
@@ -107,24 +108,24 @@ void Game::update(float dt)
         if (!matches.empty())
         {
             board.destroyMatches(matches);
-            state = FALLING;
+
+            board.dropCells();
+            board.spawnCells();
+
+            state = CHECKING;
         }
         else
         {
-            state = INPUT;
-            selectedRow = selectedCol = -1;
-        }
-        break;
-    }
+            board.swapCells(
+                selectedRow,
+                selectedCol,
+                secondRow,
+                secondCol
+            );
 
-    case FALLING:
-        if (board.animationsFinished())
-        {
-            board.dropCells();
-            board.spawnCells();
-            state = CHECKING;        // проверяем каскады
+            state = INPUT;
         }
-        break;
+    }
 
     case INPUT:
         // Ждём ввода игрока

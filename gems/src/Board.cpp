@@ -42,6 +42,20 @@ Board::Board()
             cell.bonusType = 0;
         }
     }
+    while (!findMatches().empty())
+    {
+        for (auto& row : grid)
+        {
+            for (auto& cell : row)
+            {
+                cell.color =
+                    static_cast<GemColor>(
+                        rand() % COLOR_COUNT
+                    );
+            }
+        }
+    }
+    
 }
 
 // ======================== DFS (поиск групп) ========================
@@ -64,24 +78,76 @@ static void dfs(int r, int c, GemColor color,
 
 std::vector<std::pair<int,int>> Board::findMatches()
 {
-    std::vector<std::pair<int,int>> result;
-    std::vector<std::vector<bool>> visited(SIZE, std::vector<bool>(SIZE, false));
+    std::set<std::pair<int,int>> matches;
 
+    // горизонтали
     for (int r = 0; r < SIZE; r++)
     {
-        for (int c = 0; c < SIZE; c++)
-        {
-            if (!grid[r][c].empty && !visited[r][c])
-            {
-                std::vector<std::pair<int,int>> group;
-                dfs(r, c, grid[r][c].color, group, visited, grid);
+        int count = 1;
 
-                if (group.size() >= 3)
-                    result.insert(result.end(), group.begin(), group.end());
+        for (int c = 1; c < SIZE; c++)
+        {
+            if (!grid[r][c].empty &&
+                !grid[r][c - 1].empty &&
+                grid[r][c].color == grid[r][c - 1].color)
+            {
+                count++;
+            }
+            else
+            {
+                if (count >= 3)
+                {
+                    for (int k = 0; k < count; k++)
+                        matches.insert({r, c - 1 - k});
+                }
+
+                count = 1;
             }
         }
+
+        if (count >= 3)
+        {
+            for (int k = 0; k < count; k++)
+                matches.insert({r, SIZE - 1 - k});
+        }
     }
-    return result;
+
+    // вертикали
+    for (int c = 0; c < SIZE; c++)
+    {
+        int count = 1;
+
+        for (int r = 1; r < SIZE; r++)
+        {
+            if (!grid[r][c].empty &&
+                !grid[r - 1][c].empty &&
+                grid[r][c].color == grid[r - 1][c].color)
+            {
+                count++;
+            }
+            else
+            {
+                if (count >= 3)
+                {
+                    for (int k = 0; k < count; k++)
+                        matches.insert({r - 1 - k, c});
+                }
+
+                count = 1;
+            }
+        }
+
+        if (count >= 3)
+        {
+            for (int k = 0; k < count; k++)
+                matches.insert({SIZE - 1 - k, c});
+        }
+    }
+
+    return {
+        matches.begin(),
+        matches.end()
+    };
 }
 
 // ======================== УНИЧТОЖЕНИЕ ========================
@@ -112,7 +178,7 @@ void Board::triggerBonus(int r, int c, GemColor originalColor)
     if (rand() % 2 == 0)
         repaintBonus(r, c, originalColor);
     else
-        bombBonus();
+        bombBonus(r, c);
 }
 
 void Board::repaintBonus(int r, int c, GemColor color)
@@ -136,9 +202,6 @@ void Board::repaintBonus(int r, int c, GemColor color)
 
     if (candidates.empty()) return;
 
-    // Перекрашиваем основную клетку
-    if (!grid[r][c].empty)
-        grid[r][c].color = color;
 
     // Перекрашиваем до 2 случайных несоседних
     for (int i = 0; i < 2 && !candidates.empty(); ++i)
@@ -153,18 +216,26 @@ void Board::repaintBonus(int r, int c, GemColor color)
     }
 }
 
-void Board::bombBonus()
+void Board::bombBonus(int centerR, int centerC)
 {
-    for (int i = 0; i < 5; ++i)
+    std::set<std::pair<int,int>> cells;
+
+    cells.insert({centerR, centerC});
+
+    while (cells.size() < 5)
     {
         int r = rand() % SIZE;
         int c = rand() % SIZE;
 
         if (!grid[r][c].empty)
         {
-            grid[r][c].empty = true;
-            grid[r][c].hasBonus = false;
+            cells.insert({r, c});
         }
+    }
+
+    for (auto& p : cells)
+    {
+        grid[p.first][p.second].empty = true;
     }
 }
 
@@ -226,8 +297,8 @@ bool Board::animationsFinished()
     {
         for (const auto& cell : row)
         {
-            if (std::fabs(cell.y - cell.targetY) > 2.f ||
-                std::fabs(cell.x - cell.targetX) > 2.f)
+            if (std::fabs(cell.y - cell.targetY) > 0.5f ||
+                std::fabs(cell.x - cell.targetX) > 0.5f)
                 return false;
         }
     }

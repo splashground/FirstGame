@@ -17,7 +17,6 @@ enum GameState
     INPUT,      // ожидание ввода игрока
     SWAPPING,   // анимация обмена
     CHECKING,   // поиск и уничтожение матчей
-    FALLING,    // падение и спавн
     BONUS       // обработка бонусов (если нужно)
 };
 
@@ -41,6 +40,8 @@ private:
 
     int selectedRow = -1;
     int selectedCol = -1;
+    int secondRow = -1;
+    int secondCol = -1;
 
     sf::Clock clock;
 };
