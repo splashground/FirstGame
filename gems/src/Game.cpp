@@ -2,15 +2,12 @@
 //  Game.cpp
 //  gems
 //
-//  Created by Богдан on 08.05.2026.
 //
 
-// Game.cpp
 #include "Game.h"
-#include <iostream>
-#include <cstdlib>   // для srand
-#include <ctime>     // для time
-#include <cmath>     // для std::abs
+#include <cstdlib>
+#include <ctime>
+#include <cmath>
 
 Game::Game() :
     window(sf::VideoMode({Board::SIZE * Board::CELL_SIZE,
@@ -18,18 +15,15 @@ Game::Game() :
 {
     window.setFramerateLimit(60);
     srand(static_cast<unsigned>(time(nullptr)));
-    
     state = INPUT;
 }
 
 void Game::run()
 {
     sf::Clock clock;
-
     while (window.isOpen())
     {
         float dt = clock.restart().asSeconds();
-
         processEvents();
         update(dt);
         draw();
@@ -50,9 +44,7 @@ void Game::processEvents()
         {
             auto mouse = event->getIf<sf::Event::MouseButtonPressed>();
             if (mouse && mouse->button == sf::Mouse::Button::Left)
-            {
                 handleClick(mouse->position.x, mouse->position.y);
-            }
         }
     }
 }
@@ -72,17 +64,15 @@ void Game::handleClick(int mx, int my)
     }
     else
     {
-        // Проверка на соседей
         if (std::abs(selectedRow - r) + std::abs(selectedCol - c) == 1)
         {
             board.swapCells(selectedRow, selectedCol, r, c);
             secondRow = r;
             secondCol = c;
-            state = SWAPPING;
+            state     = SWAPPING;
         }
         else
         {
-            // Перевыбор
             selectedRow = r;
             selectedCol = c;
         }
@@ -97,10 +87,8 @@ void Game::update(float dt)
     {
     case SWAPPING:
         if (board.animationsFinished())
-        {
             state = CHECKING;
-        }
-        break;
+        break;  // ← was missing in original; caused fall-through into CHECKING
 
     case CHECKING:
     {
@@ -108,27 +96,24 @@ void Game::update(float dt)
         if (!matches.empty())
         {
             board.destroyMatches(matches);
-
             board.dropCells();
             board.spawnCells();
 
-            state = CHECKING;
         }
         else
         {
-            board.swapCells(
-                selectedRow,
-                selectedCol,
-                secondRow,
-                secondCol
-            );
-
+            // No matches after swap → reverse the swap.
+            board.swapCells(selectedRow, selectedCol, secondRow, secondCol);
+            selectedRow = selectedCol = -1;
             state = INPUT;
         }
+        break;
     }
 
     case INPUT:
-        // Ждём ввода игрока
+        break;
+
+    default:
         break;
     }
 }

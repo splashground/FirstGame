@@ -2,20 +2,19 @@
 //  Board.h
 //  gems
 //
-//  Created by Богдан on 08.05.2026.
 //
 
-// Board.h
 #pragma once
 
 #include "Cell.h"
 #include <SFML/Graphics.hpp>
 #include <vector>
+#include <memory>
 
 class Board
 {
 public:
-    static const int SIZE = 8;
+    static const int SIZE      = 8;
     static const int CELL_SIZE = 64;
 
     Board();
@@ -33,11 +32,12 @@ public:
 
     bool animationsFinished();
 
-    void triggerBonus(int r, int c, GemColor originalColor);
-    void repaintBonus(int r, int c, GemColor color);
-    void bombBonus(int centerR, int centerC);
-
 private:
-    std::vector<std::vector<Cell>> grid;
+    GemGrid grid;
+
     sf::Texture textures[COLOR_COUNT];
+
+    void initCell(int r, int c, bool allowBonus);
+    Gem& at(int r, int c) { return *grid[r][c]; }
+    const Gem& at(int r, int c) const { return *grid[r][c]; }
 };

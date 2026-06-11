@@ -2,10 +2,8 @@
 //  Game.h
 //  gems
 //
-//  Created by Богдан on 08.05.2026.
 //
 
-// Game.h
 #pragma once
 
 #include "Board.h"
@@ -14,10 +12,10 @@
 
 enum GameState
 {
-    INPUT,      // ожидание ввода игрока
-    SWAPPING,   // анимация обмена
-    CHECKING,   // поиск и уничтожение матчей
-    BONUS       // обработка бонусов (если нужно)
+    INPUT,      // waiting for player input
+    SWAPPING,   // swap animation playing
+    CHECKING,   // finding / destroying matches
+    BONUS       // (reserved for future use)
 };
 
 class Game
@@ -30,18 +28,17 @@ private:
     void processEvents();
     void update(float dt);
     void draw();
-
     void handleClick(int mouseX, int mouseY);
 
     sf::RenderWindow window;
-    Board board;
+    Board            board;
 
     GameState state = INPUT;
 
     int selectedRow = -1;
     int selectedCol = -1;
-    int secondRow = -1;
-    int secondCol = -1;
+    int secondRow   = -1;
+    int secondCol   = -1;
 
     sf::Clock clock;
 };
